@@ -1,0 +1,14 @@
+; Engine configuration file.
+; Edited by hand for plugin bootstrap.
+
+config_version=5
+
+[application]
+
+config/name="GoTamata Asset Pipeline"
+config/features=PackedStringArray("4.6")
+config/icon="res://icon.svg"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gotamata_agent_bridge/plugin.cfg")

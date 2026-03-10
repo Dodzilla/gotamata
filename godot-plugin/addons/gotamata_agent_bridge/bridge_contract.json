@@ -1,0 +1,582 @@
+{
+  "plugin": {
+    "name": "GoTamata Asset Pipeline",
+    "slug": "gotamata_asset_pipeline",
+    "version": "0.2.0"
+  },
+  "transport": {
+    "host": "127.0.0.1",
+    "port": 47891,
+    "framing": "newline-delimited JSON"
+  },
+  "call_targets": [
+    "editor_interface",
+    "edited_scene_root",
+    "selection",
+    "plugin"
+  ],
+  "commands": [
+    {
+      "name": "ping",
+      "category": "core",
+      "description": "Verify bridge connectivity.",
+      "result": "Plugin identity and current server status.",
+      "args": []
+    },
+    {
+      "name": "list_commands",
+      "category": "core",
+      "description": "List supported bridge commands.",
+      "result": "Command name list from the contract.",
+      "args": []
+    },
+    {
+      "name": "editor_state",
+      "category": "editor",
+      "description": "Read the current Godot editor scene state.",
+      "result": "Edited scene path/root name and play-state.",
+      "args": []
+    },
+    {
+      "name": "open_scene",
+      "category": "editor",
+      "description": "Open a scene in the running editor.",
+      "result": "Opened scene path.",
+      "args": [
+        {
+          "name": "path",
+          "required": true,
+          "description": "Scene path as res://... or project-relative."
+        }
+      ]
+    },
+    {
+      "name": "play",
+      "category": "editor",
+      "description": "Play the configured main scene.",
+      "result": "Updated play-state.",
+      "args": []
+    },
+    {
+      "name": "stop",
+      "category": "editor",
+      "description": "Stop the currently running scene.",
+      "result": "Updated play-state.",
+      "args": []
+    },
+    {
+      "name": "save_scene",
+      "category": "editor",
+      "description": "Save the edited scene, optionally to an explicit path.",
+      "result": "Saved scene path.",
+      "args": [
+        {
+          "name": "path",
+          "required": false,
+          "description": "Optional explicit save path."
+        }
+      ]
+    },
+    {
+      "name": "select_node",
+      "category": "editor",
+      "description": "Select a node in the edited scene.",
+      "result": "Resolved selected node path.",
+      "args": [
+        {
+          "name": "path",
+          "required": true,
+          "description": "Node path relative to the edited root or absolute."
+        }
+      ]
+    },
+    {
+      "name": "add_node",
+      "category": "editor",
+      "description": "Instantiate and add a node under a parent node.",
+      "result": "Created node path, name, and type.",
+      "args": [
+        {
+          "name": "parent",
+          "required": false,
+          "description": "Parent node path. Defaults to '.'."
+        },
+        {
+          "name": "type",
+          "required": false,
+          "description": "Godot class name. Defaults to Node."
+        },
+        {
+          "name": "name",
+          "required": false,
+          "description": "Optional preferred node name."
+        },
+        {
+          "name": "properties",
+          "required": false,
+          "description": "Optional property dictionary to apply after creation."
+        }
+      ]
+    },
+    {
+      "name": "set_property",
+      "category": "editor",
+      "description": "Set a property on a resolved node.",
+      "result": "Echo of updated path, property, and value.",
+      "args": [
+        {
+          "name": "path",
+          "required": true,
+          "description": "Target node path."
+        },
+        {
+          "name": "property",
+          "required": true,
+          "description": "Property name to update."
+        },
+        {
+          "name": "value",
+          "required": true,
+          "description": "Variant value to assign."
+        }
+      ]
+    },
+    {
+      "name": "set_main_screen",
+      "category": "editor",
+      "description": "Switch the Godot editor main screen.",
+      "result": "Selected screen name.",
+      "args": [
+        {
+          "name": "screen",
+          "required": true,
+          "description": "Main screen name such as 2D, 3D, Script, or AssetLib."
+        }
+      ]
+    },
+    {
+      "name": "call",
+      "category": "editor",
+      "description": "Call a public method on an allowed bridge target.",
+      "result": "Target, method, and returned payload.",
+      "args": [
+        {
+          "name": "target",
+          "required": true,
+          "description": "One of the allowed call targets."
+        },
+        {
+          "name": "method",
+          "required": true,
+          "description": "Public method name. Methods starting with '_' are rejected."
+        },
+        {
+          "name": "arguments",
+          "required": false,
+          "description": "Optional array of call arguments."
+        }
+      ]
+    },
+    {
+      "name": "pipeline_overview",
+      "category": "pipeline",
+      "description": "Read high-level pipeline storage and count state.",
+      "result": "Template/run/revision counts and storage paths.",
+      "args": []
+    },
+    {
+      "name": "list_workflow_templates",
+      "category": "pipeline",
+      "description": "List workflow template summaries.",
+      "result": "Workflow template summary array.",
+      "args": []
+    },
+    {
+      "name": "get_workflow_template",
+      "category": "pipeline",
+      "description": "Fetch a full workflow template document.",
+      "result": "Workflow template JSON payload.",
+      "args": [
+        {
+          "name": "template_id",
+          "required": true,
+          "description": "Workflow template id."
+        }
+      ]
+    },
+    {
+      "name": "upsert_workflow_template",
+      "category": "pipeline",
+      "description": "Create or update a workflow template.",
+      "result": "Normalized workflow template and summary.",
+      "args": [
+        {
+          "name": "template",
+          "required": true,
+          "description": "Template object to normalize and persist."
+        }
+      ]
+    },
+    {
+      "name": "delete_workflow_template",
+      "category": "pipeline",
+      "description": "Delete a workflow template when it is not in use.",
+      "result": "Deleted template id.",
+      "args": [
+        {
+          "name": "template_id",
+          "required": true,
+          "description": "Workflow template id."
+        }
+      ]
+    },
+    {
+      "name": "list_workflow_runs",
+      "category": "pipeline",
+      "description": "List persisted workflow run summaries.",
+      "result": "Workflow run summary array.",
+      "args": []
+    },
+    {
+      "name": "get_workflow_run",
+      "category": "pipeline",
+      "description": "Fetch the source-of-truth workflow run document.",
+      "result": "Workflow run payload with attempts, artifacts, revisions, logs, and validation.",
+      "args": [
+        {
+          "name": "run_id",
+          "required": true,
+          "description": "Workflow run id."
+        }
+      ]
+    },
+    {
+      "name": "create_workflow_run",
+      "category": "pipeline",
+      "description": "Create a new workflow run from a template.",
+      "result": "Created workflow run payload.",
+      "args": [
+        {
+          "name": "template_id",
+          "required": true,
+          "description": "Workflow template id."
+        },
+        {
+          "name": "asset_slug",
+          "required": true,
+          "description": "Stable slug for generated asset output."
+        },
+        {
+          "name": "display_name",
+          "required": false,
+          "description": "Optional human-readable name."
+        }
+      ]
+    },
+    {
+      "name": "delete_workflow_run",
+      "category": "pipeline",
+      "description": "Delete a workflow run and its scratch artifacts.",
+      "result": "Deleted workflow run id.",
+      "args": [
+        {
+          "name": "run_id",
+          "required": true,
+          "description": "Workflow run id."
+        }
+      ]
+    },
+    {
+      "name": "apply_workflow_decision",
+      "category": "pipeline",
+      "description": "Advance or resolve a workflow attempt with an explicit decision.",
+      "result": "Updated workflow run payload.",
+      "args": [
+        {
+          "name": "run_id",
+          "required": true,
+          "description": "Workflow run id."
+        },
+        {
+          "name": "attempt_id",
+          "required": true,
+          "description": "Workflow attempt id."
+        },
+        {
+          "name": "decision",
+          "required": true,
+          "description": "Allowed decision name from the attempt."
+        },
+        {
+          "name": "note",
+          "required": false,
+          "description": "Optional review or routing note."
+        }
+      ]
+    },
+    {
+      "name": "set_workflow_import_recipe",
+      "category": "pipeline",
+      "description": "Persist import settings for a workflow run.",
+      "result": "Updated workflow run payload.",
+      "args": [
+        {
+          "name": "run_id",
+          "required": true,
+          "description": "Workflow run id."
+        },
+        {
+          "name": "import_recipe",
+          "required": true,
+          "description": "Import recipe object."
+        }
+      ]
+    },
+    {
+      "name": "set_workflow_attempt_job",
+      "category": "pipeline",
+      "description": "Record the outbound provider request for a workflow attempt.",
+      "result": "Updated workflow run and attempt payload.",
+      "args": [
+        {
+          "name": "run_id",
+          "required": true,
+          "description": "Workflow run id."
+        },
+        {
+          "name": "attempt_id",
+          "required": true,
+          "description": "Workflow attempt id."
+        },
+        {
+          "name": "provider",
+          "required": true,
+          "description": "External provider identifier."
+        },
+        {
+          "name": "task_type",
+          "required": true,
+          "description": "Provider task type."
+        },
+        {
+          "name": "request_payload",
+          "required": true,
+          "description": "Provider request payload."
+        },
+        {
+          "name": "job_id",
+          "required": false,
+          "description": "Optional provider job id if already known."
+        },
+        {
+          "name": "idempotency_key",
+          "required": false,
+          "description": "Optional client-side idempotency key."
+        },
+        {
+          "name": "note",
+          "required": false,
+          "description": "Optional note attached to the attempt."
+        }
+      ]
+    },
+    {
+      "name": "set_workflow_attempt_job_status",
+      "category": "pipeline",
+      "description": "Record provider status, outputs, and errors for a workflow attempt.",
+      "result": "Updated workflow run and attempt payload.",
+      "args": [
+        {
+          "name": "run_id",
+          "required": true,
+          "description": "Workflow run id."
+        },
+        {
+          "name": "attempt_id",
+          "required": true,
+          "description": "Workflow attempt id."
+        },
+        {
+          "name": "status",
+          "required": true,
+          "description": "Job status mapped into pipeline state."
+        },
+        {
+          "name": "job_id",
+          "required": false,
+          "description": "Optional provider job id."
+        },
+        {
+          "name": "response_payload",
+          "required": false,
+          "description": "Optional provider response payload."
+        },
+        {
+          "name": "output_urls",
+          "required": false,
+          "description": "Optional provider-hosted output URLs."
+        },
+        {
+          "name": "downloaded_paths",
+          "required": false,
+          "description": "Optional local res:// or file paths for downloaded outputs."
+        },
+        {
+          "name": "error_message",
+          "required": false,
+          "description": "Optional human-readable failure detail."
+        }
+      ]
+    },
+    {
+      "name": "register_workflow_artifact",
+      "category": "pipeline",
+      "description": "Create or update a workflow artifact record.",
+      "result": "Updated workflow run and artifact payload.",
+      "args": [
+        {
+          "name": "run_id",
+          "required": true,
+          "description": "Workflow run id."
+        },
+        {
+          "name": "attempt_id",
+          "required": false,
+          "description": "Optional attempt id that produced the artifact."
+        },
+        {
+          "name": "artifact_type",
+          "required": true,
+          "description": "Artifact type name."
+        },
+        {
+          "name": "display_name",
+          "required": false,
+          "description": "Optional human-readable artifact name."
+        },
+        {
+          "name": "storage_uri",
+          "required": true,
+          "description": "Artifact storage path or URI."
+        },
+        {
+          "name": "preview_uri",
+          "required": false,
+          "description": "Optional preview image path or URI."
+        },
+        {
+          "name": "metadata",
+          "required": false,
+          "description": "Optional metadata object."
+        },
+        {
+          "name": "selected",
+          "required": false,
+          "description": "Whether the artifact is selected as canonical."
+        },
+        {
+          "name": "publish_candidate",
+          "required": false,
+          "description": "Whether the artifact is eligible for publish."
+        },
+        {
+          "name": "artifact_id",
+          "required": false,
+          "description": "Existing artifact id to update in place."
+        }
+      ]
+    },
+    {
+      "name": "delete_workflow_artifact",
+      "category": "pipeline",
+      "description": "Delete an artifact from a workflow run.",
+      "result": "Updated workflow run and deleted artifact id.",
+      "args": [
+        {
+          "name": "run_id",
+          "required": true,
+          "description": "Workflow run id."
+        },
+        {
+          "name": "artifact_id",
+          "required": true,
+          "description": "Workflow artifact id."
+        }
+      ]
+    },
+    {
+      "name": "publish_workflow_revision",
+      "category": "pipeline",
+      "description": "Publish the canonical revision manifest for a run.",
+      "result": "Updated workflow run and revision manifest payload.",
+      "args": [
+        {
+          "name": "run_id",
+          "required": true,
+          "description": "Workflow run id."
+        },
+        {
+          "name": "version_label",
+          "required": false,
+          "description": "Optional semantic version label."
+        },
+        {
+          "name": "notes",
+          "required": false,
+          "description": "Optional release notes."
+        }
+      ]
+    },
+    {
+      "name": "set_workflow_artifact_selected",
+      "category": "pipeline",
+      "description": "Mark an artifact as selected or unselected.",
+      "result": "Updated workflow run and artifact payload.",
+      "args": [
+        {
+          "name": "run_id",
+          "required": true,
+          "description": "Workflow run id."
+        },
+        {
+          "name": "artifact_id",
+          "required": true,
+          "description": "Workflow artifact id."
+        },
+        {
+          "name": "selected",
+          "required": false,
+          "description": "Defaults to true when omitted."
+        }
+      ]
+    },
+    {
+      "name": "set_workflow_artifact_publish_candidate",
+      "category": "pipeline",
+      "description": "Mark an artifact as a publish candidate or clear that flag.",
+      "result": "Updated workflow run and artifact payload.",
+      "args": [
+        {
+          "name": "run_id",
+          "required": true,
+          "description": "Workflow run id."
+        },
+        {
+          "name": "artifact_id",
+          "required": true,
+          "description": "Workflow artifact id."
+        },
+        {
+          "name": "publish_candidate",
+          "required": false,
+          "description": "Defaults to true when omitted."
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "The bridge tracks editor and pipeline state; it does not execute third-party generation jobs directly.",
+    "Use set_workflow_attempt_job before provider execution and set_workflow_attempt_job_status after polling or completion so external work remains auditable in the workflow run.",
+    "Published manifests include the run's current import_recipe and the currently selected canonical artifacts."
+  ]
+}

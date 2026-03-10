@@ -1,0 +1,239 @@
+{
+	"template_id": "model_asset_v1",
+	"name": "3D Model Asset",
+	"asset_type": "3d_model",
+	"version": 1,
+	"required_artifact_types": [
+		"ConceptDoc",
+		"PromptSpec",
+		"ConceptImage",
+		"SelectedReferenceImage",
+		"MeshDraft",
+		"ImportedScene",
+		"AssetRevisionManifest"
+	],
+	"publish_node_ids": [
+		"publish_revision"
+	],
+	"nodes": [
+		{
+			"id": "concept_text",
+			"label": "Concept Text",
+			"kind": "input",
+			"entry": true,
+			"description": "Define the model brief, constraints, and references.",
+			"produces": [
+				"ConceptDoc"
+			],
+			"decisions": [
+				"approve",
+				"request_changes"
+			]
+		},
+		{
+			"id": "image_prompt",
+			"label": "Image Prompt",
+			"kind": "input",
+			"description": "Translate the concept into a text-to-image prompt.",
+			"consumes": [
+				"ConceptDoc"
+			],
+			"produces": [
+				"PromptSpec"
+			],
+			"decisions": [
+				"approve",
+				"request_changes"
+			]
+		},
+		{
+			"id": "text_to_image",
+			"label": "Text To Image",
+			"kind": "job",
+			"description": "Generate concept image candidates.",
+			"consumes": [
+				"PromptSpec"
+			],
+			"produces": [
+				"ConceptImage"
+			],
+			"decisions": [
+				"queue",
+				"run",
+				"needs_review",
+				"request_changes"
+			]
+		},
+		{
+			"id": "concept_review",
+			"label": "Concept Review",
+			"kind": "review",
+			"description": "Approve a concept image or loop back for more variants.",
+			"consumes": [
+				"ConceptImage"
+			],
+			"produces": [
+				"SelectedReferenceImage"
+			],
+			"decisions": [
+				"approve_one",
+				"more_variants",
+				"request_changes",
+				"promote_to_reference"
+			]
+		},
+		{
+			"id": "image_to_3d",
+			"label": "Image To 3D",
+			"kind": "job",
+			"description": "Create mesh candidates from the selected concept image.",
+			"consumes": [
+				"SelectedReferenceImage"
+			],
+			"produces": [
+				"MeshDraft"
+			],
+			"decisions": [
+				"queue",
+				"run",
+				"needs_review",
+				"request_changes"
+			]
+		},
+		{
+			"id": "mesh_review",
+			"label": "Mesh Review",
+			"kind": "review",
+			"description": "Review topology, proportions, and readiness for import.",
+			"consumes": [
+				"MeshDraft"
+			],
+			"produces": [
+				"ApprovedMesh"
+			],
+			"decisions": [
+				"approve",
+				"regenerate_from_same_reference",
+				"back_to_concept",
+				"request_changes"
+			]
+		},
+		{
+			"id": "import_and_validate",
+			"label": "Import And Validate",
+			"kind": "import",
+			"description": "Prepare the asset for Godot import and validate it.",
+			"consumes": [
+				"ApprovedMesh"
+			],
+			"produces": [
+				"ImportedScene",
+				"ValidationReport"
+			],
+			"decisions": [
+				"queue",
+				"run",
+				"approve",
+				"request_changes"
+			]
+		},
+		{
+			"id": "publish_revision",
+			"label": "Publish Revision",
+			"kind": "publish",
+			"description": "Write the canonical revision manifest into assets/generated.",
+			"consumes": [
+				"ImportedScene",
+				"ValidationReport"
+			],
+			"produces": [
+				"AssetRevisionManifest"
+			],
+			"decisions": [
+				"publish"
+			]
+		}
+	],
+	"edges": [
+		{
+			"from": "concept_text",
+			"decision": "approve",
+			"to": "image_prompt"
+		},
+		{
+			"from": "image_prompt",
+			"decision": "approve",
+			"to": "text_to_image"
+		},
+		{
+			"from": "text_to_image",
+			"decision": "needs_review",
+			"to": "concept_review"
+		},
+		{
+			"from": "text_to_image",
+			"decision": "request_changes",
+			"to": "image_prompt"
+		},
+		{
+			"from": "concept_review",
+			"decision": "approve_one",
+			"to": "image_to_3d"
+		},
+		{
+			"from": "concept_review",
+			"decision": "promote_to_reference",
+			"to": "image_to_3d"
+		},
+		{
+			"from": "concept_review",
+			"decision": "more_variants",
+			"to": "text_to_image"
+		},
+		{
+			"from": "concept_review",
+			"decision": "request_changes",
+			"to": "image_prompt"
+		},
+		{
+			"from": "image_to_3d",
+			"decision": "needs_review",
+			"to": "mesh_review"
+		},
+		{
+			"from": "image_to_3d",
+			"decision": "request_changes",
+			"to": "concept_review"
+		},
+		{
+			"from": "mesh_review",
+			"decision": "approve",
+			"to": "import_and_validate"
+		},
+		{
+			"from": "mesh_review",
+			"decision": "regenerate_from_same_reference",
+			"to": "image_to_3d"
+		},
+		{
+			"from": "mesh_review",
+			"decision": "back_to_concept",
+			"to": "concept_review"
+		},
+		{
+			"from": "mesh_review",
+			"decision": "request_changes",
+			"to": "image_to_3d"
+		},
+		{
+			"from": "import_and_validate",
+			"decision": "approve",
+			"to": "publish_revision"
+		},
+		{
+			"from": "import_and_validate",
+			"decision": "request_changes",
+			"to": "mesh_review"
+		}
+	]
+}

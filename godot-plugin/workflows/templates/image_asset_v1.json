@@ -1,0 +1,169 @@
+{
+	"template_id": "image_asset_v1",
+	"name": "Image Asset",
+	"asset_type": "image",
+	"version": 1,
+	"required_artifact_types": [
+		"ConceptDoc",
+		"PromptSpec",
+		"ConceptImage",
+		"AssetRevisionManifest"
+	],
+	"publish_node_ids": [
+		"publish_revision"
+	],
+	"nodes": [
+		{
+			"id": "brief",
+			"label": "Brief",
+			"kind": "input",
+			"entry": true,
+			"description": "Capture the asset brief, constraints, and style direction.",
+			"produces": [
+				"ConceptDoc"
+			],
+			"decisions": [
+				"approve",
+				"request_changes"
+			]
+		},
+		{
+			"id": "prompt",
+			"label": "Prompt",
+			"kind": "input",
+			"description": "Refine the generation prompt and negative prompt.",
+			"consumes": [
+				"ConceptDoc"
+			],
+			"produces": [
+				"PromptSpec"
+			],
+			"decisions": [
+				"approve",
+				"request_changes"
+			]
+		},
+		{
+			"id": "generate_images",
+			"label": "Generate Images",
+			"kind": "job",
+			"description": "Run a text-to-image job and stage the resulting concepts.",
+			"consumes": [
+				"PromptSpec"
+			],
+			"produces": [
+				"ConceptImage"
+			],
+			"decisions": [
+				"queue",
+				"run",
+				"needs_review",
+				"request_changes"
+			]
+		},
+		{
+			"id": "review_images",
+			"label": "Review Images",
+			"kind": "review",
+			"description": "Shortlist and select the preferred concept image.",
+			"consumes": [
+				"ConceptImage"
+			],
+			"produces": [
+				"SelectedReferenceImage"
+			],
+			"decisions": [
+				"approve_one",
+				"more_variants",
+				"request_changes",
+				"promote_to_reference"
+			]
+		},
+		{
+			"id": "polish",
+			"label": "Polish",
+			"kind": "transform",
+			"description": "Optional polish pass before publish.",
+			"consumes": [
+				"SelectedReferenceImage"
+			],
+			"produces": [
+				"PolishedImage"
+			],
+			"decisions": [
+				"queue",
+				"run",
+				"approve",
+				"skip"
+			]
+		},
+		{
+			"id": "publish_revision",
+			"label": "Publish Revision",
+			"kind": "publish",
+			"description": "Freeze the selected artifacts into a canonical revision manifest.",
+			"consumes": [
+				"PolishedImage",
+				"SelectedReferenceImage"
+			],
+			"produces": [
+				"AssetRevisionManifest"
+			],
+			"decisions": [
+				"publish"
+			]
+		}
+	],
+	"edges": [
+		{
+			"from": "brief",
+			"decision": "approve",
+			"to": "prompt"
+		},
+		{
+			"from": "prompt",
+			"decision": "approve",
+			"to": "generate_images"
+		},
+		{
+			"from": "generate_images",
+			"decision": "needs_review",
+			"to": "review_images"
+		},
+		{
+			"from": "generate_images",
+			"decision": "request_changes",
+			"to": "prompt"
+		},
+		{
+			"from": "review_images",
+			"decision": "approve_one",
+			"to": "polish"
+		},
+		{
+			"from": "review_images",
+			"decision": "promote_to_reference",
+			"to": "polish"
+		},
+		{
+			"from": "review_images",
+			"decision": "more_variants",
+			"to": "generate_images"
+		},
+		{
+			"from": "review_images",
+			"decision": "request_changes",
+			"to": "prompt"
+		},
+		{
+			"from": "polish",
+			"decision": "approve",
+			"to": "publish_revision"
+		},
+		{
+			"from": "polish",
+			"decision": "skip",
+			"to": "publish_revision"
+		}
+	]
+}
