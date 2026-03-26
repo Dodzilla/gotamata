@@ -1,4 +1,0 @@
-interface:
-  display_name: "GoTamata Pipeline Bridge"
-  short_description: "Control the local GoTamata asset pipeline and Godot editor via bridge commands."
-  default_prompt: "Control the local GoTamata Godot plugin command server, manage workflow templates, runs, external job state, import recipes, artifacts, and revisions through the pipeline commands first, execute one command at a time, and report request/response results clearly."
