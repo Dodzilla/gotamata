@@ -1,0 +1,14 @@
+; Engine configuration file.
+; Minimal wrapper project for opening and testing the addon in Godot 4.6.
+
+config_version=5
+
+[application]
+
+config/name="KillaTamata Arcade Bridge"
+config/features=PackedStringArray("4.6")
+config/icon="res://icon.svg"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/killatamata_arcade_bridge/plugin.cfg")

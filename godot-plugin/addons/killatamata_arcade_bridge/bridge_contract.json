@@ -1,0 +1,156 @@
+{
+  "plugin": {
+    "name": "KillaTamata Arcade Bridge",
+    "slug": "killatamata_arcade_bridge",
+    "version": "0.1.0"
+  },
+  "transport": {
+    "host": "127.0.0.1",
+    "port": 47891,
+    "framing": "newline-delimited JSON"
+  },
+  "commands": [
+    {
+      "name": "ping",
+      "category": "core",
+      "description": "Verify bridge connectivity and report server identity.",
+      "result": "Plugin identity, project path, and server status.",
+      "args": []
+    },
+    {
+      "name": "list_commands",
+      "category": "core",
+      "description": "List supported bridge commands from the contract.",
+      "result": "Ordered command name list.",
+      "args": []
+    },
+    {
+      "name": "get_recent_logs",
+      "category": "core",
+      "description": "Read recent bridge, validation, and build log lines.",
+      "result": "Recent log line array.",
+      "args": [
+        {
+          "name": "limit",
+          "required": false,
+          "description": "Maximum number of recent lines to return."
+        }
+      ]
+    },
+    {
+      "name": "editor_state",
+      "category": "editor",
+      "description": "Read the current edited scene and play state.",
+      "result": "Edited scene path, root node name, and play-state.",
+      "args": []
+    },
+    {
+      "name": "open_scene",
+      "category": "editor",
+      "description": "Open a scene in the running Godot editor.",
+      "result": "Opened scene path.",
+      "args": [
+        {
+          "name": "path",
+          "required": true,
+          "description": "Scene path as res://... or project-relative."
+        }
+      ]
+    },
+    {
+      "name": "save_scene",
+      "category": "editor",
+      "description": "Save the current edited scene, optionally to a specific path.",
+      "result": "Saved scene path.",
+      "args": [
+        {
+          "name": "path",
+          "required": false,
+          "description": "Optional explicit target scene path."
+        }
+      ]
+    },
+    {
+      "name": "project_state",
+      "category": "project",
+      "description": "Read project-level arcade readiness state.",
+      "result": "Project path, Godot version, C# detection, config state, export preset summary, and validation summary.",
+      "args": []
+    },
+    {
+      "name": "get_arcade_project_config",
+      "category": "project",
+      "description": "Read the committed arcade project config file if present.",
+      "result": "Parsed config object or null when missing.",
+      "args": []
+    },
+    {
+      "name": "upsert_arcade_project_config",
+      "category": "project",
+      "description": "Merge and normalize arcade project config updates.",
+      "result": "Updated config object and config file path.",
+      "args": [
+        {
+          "name": "patch",
+          "required": true,
+          "description": "Partial config object to merge into the existing config."
+        }
+      ]
+    },
+    {
+      "name": "generate_arcade_manifest_preview",
+      "category": "project",
+      "description": "Resolve the exact release manifest that would be written into the export bundle.",
+      "result": "Manifest preview object.",
+      "args": []
+    },
+    {
+      "name": "list_export_presets",
+      "category": "export",
+      "description": "List Godot export preset summaries from export_presets.cfg.",
+      "result": "Export preset summary array.",
+      "args": []
+    },
+    {
+      "name": "ensure_arcade_web_export_preset",
+      "category": "export",
+      "description": "Create or update the arcade web export preset without mutating unrelated presets.",
+      "result": "Preset summary and validation after the update.",
+      "args": []
+    },
+    {
+      "name": "validate_arcade_web_export_preset",
+      "category": "validation",
+      "description": "Validate the active arcade web export preset against KillaTamata rules.",
+      "result": "Blocking issues, warnings, and the resolved preset summary.",
+      "args": []
+    },
+    {
+      "name": "validate_arcade_project",
+      "category": "validation",
+      "description": "Validate arcade config completeness, cover asset staging readiness, unsupported modes, and export readiness.",
+      "result": "Structured readiness report with blocking issues, warnings, inferred values, manifest preview, and export preset summary.",
+      "args": []
+    },
+    {
+      "name": "build_arcade_release",
+      "category": "build",
+      "description": "Validate, export, stage the cover asset, verify, and package the Godot Web release bundle.",
+      "result": "Staging directory, ZIP path, manifest, file inventory, and both source and staged cover image paths.",
+      "args": []
+    },
+    {
+      "name": "reveal_arcade_build",
+      "category": "build",
+      "description": "Reveal the current arcade staging directory in the local file browser.",
+      "result": "Resolved staging directory path.",
+      "args": []
+    }
+  ],
+  "notes": [
+    "The bridge is localhost-only by default and supports an optional shared-secret token.",
+    "The addon owns res://killatamata.arcade.json and res://.gotamata/arcade_builds for arcade publishing state.",
+    "C# projects and threaded web exports are treated as blocking issues for KillaTamata Arcade V1.",
+    "Remote KillaTamata submission stays in the agent-side submission client, not inside the Godot addon."
+  ]
+}
